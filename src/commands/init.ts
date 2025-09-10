@@ -106,7 +106,8 @@ export async function initCommand(options: any) {
     }
     
     // Copy .gitignore template
-    await fs.copy(path.join(__dirname, '../../templates/.gitignore'), '.gitignore');
+    const templatePath = new URL('../../templates/.gitignore', import.meta.url).pathname;
+    await fs.copy(templatePath, '.gitignore');
 
     // Create config file
     await fs.writeJSON('forge.config.json', validatedConfig, { spaces: 2 });
@@ -129,8 +130,10 @@ export async function initCommand(options: any) {
     await fs.writeJSON(path.join(validatedConfig.outputDir, 'registry.json'), initialRegistry, { spaces: 2 });
 
     // Copy Storybook configuration
-    await fs.copy(path.join(__dirname, '../../templates/.storybook'), '.storybook');
-    await fs.copy(path.join(__dirname, '../../templates/stories'), 'stories');
+    const storybookTemplatePath = new URL('../../templates/.storybook', import.meta.url).pathname;
+    const storiesTemplatePath = new URL('../../templates/stories', import.meta.url).pathname;
+    await fs.copy(storybookTemplatePath, '.storybook');
+    await fs.copy(storiesTemplatePath, 'stories');
 
     // Create package.json for the component library
     const packageJson = {
