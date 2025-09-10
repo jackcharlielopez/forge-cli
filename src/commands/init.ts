@@ -1,5 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import chalk from 'chalk';
 import ora from 'ora';
 import inquirer from 'inquirer';
@@ -106,7 +107,7 @@ export async function initCommand(options: any) {
     }
     
     // Copy .gitignore template
-    const templatePath = new URL('../../templates/.gitignore', import.meta.url).pathname;
+    const templatePath = fileURLToPath(new URL('../../templates/.gitignore', import.meta.url));
     await fs.copy(templatePath, '.gitignore');
 
     // Create config file
@@ -130,8 +131,8 @@ export async function initCommand(options: any) {
     await fs.writeJSON(path.join(validatedConfig.outputDir, 'registry.json'), initialRegistry, { spaces: 2 });
 
     // Copy Storybook configuration
-    const storybookTemplatePath = new URL('../../templates/.storybook', import.meta.url).pathname;
-    const storiesTemplatePath = new URL('../../templates/stories', import.meta.url).pathname;
+    const storybookTemplatePath = fileURLToPath(new URL('../../templates/.storybook', import.meta.url));
+    const storiesTemplatePath = fileURLToPath(new URL('../../templates/stories', import.meta.url));
     await fs.copy(storybookTemplatePath, '.storybook');
     await fs.copy(storiesTemplatePath, 'stories');
 
