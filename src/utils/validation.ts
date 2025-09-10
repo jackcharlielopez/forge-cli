@@ -1,6 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
-import { Component } from '../schemas/component';
+import { Component } from '../schemas/component.js';
 
 export async function validateComponent(
   component: Component, 

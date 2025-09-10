@@ -2,8 +2,8 @@ import fs from 'fs-extra';
 import path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
-import { loadForgeConfig } from '../utils/config';
-import { ForgeConfigSchema } from '../schemas/component';
+import { loadForgeConfig } from '../utils/config.js';
+import { ForgeConfigSchema } from '../schemas/component.js';
 
 interface ConfigOptions {
   set?: string;

@@ -2,16 +2,16 @@
 
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { initCommand } from './commands/init';
-import { addCommand } from './commands/add';
-import { listCommand } from './commands/list';
-import { buildCommand } from './commands/build';
-import { validateCommand } from './commands/validate';
-import { publishCommand } from './commands/publish';
-import { updateCommand } from './commands/update';
-import { removeCommand } from './commands/remove';
-import { searchCommand } from './commands/search';
-import { configCommand } from './commands/config';
+import { initCommand } from './commands/init.js';
+import { addCommand } from './commands/add.js';
+import { listCommand } from './commands/list.js';
+import { buildCommand } from './commands/build.js';
+import { validateCommand } from './commands/validate.js';
+import { publishCommand } from './commands/publish.js';
+import { updateCommand } from './commands/update.js';
+import { removeCommand } from './commands/remove.js';
+import { searchCommand } from './commands/search.js';
+import { configCommand } from './commands/config.js';
 
 const program = new Command();
 

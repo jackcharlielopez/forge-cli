@@ -2,9 +2,9 @@ import fs from 'fs-extra';
 import path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
-import { loadForgeConfig } from '../utils/config';
-import { ComponentSchema } from '../schemas/component';
-import { validateComponent } from '../utils/validation';
+import { loadForgeConfig } from '../utils/config.js';
+import { ComponentSchema } from '../schemas/component.js';
+import { validateComponent } from '../utils/validation.js';
 
 interface ValidateOptions {
   fix?: boolean;

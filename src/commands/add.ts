@@ -3,8 +3,8 @@ import path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
 import inquirer from 'inquirer';
-import { Component, ComponentSchema } from '../schemas/component';
-import { loadForgeConfig } from '../utils/config';
+import { Component, ComponentSchema } from '../schemas/component.js';
+import { loadForgeConfig } from '../utils/config.js';
 
 export async function addCommand(componentName?: string, options?: any) {
   const spinner = ora('Adding new component...').start();

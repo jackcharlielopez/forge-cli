@@ -3,7 +3,7 @@ import path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
 import inquirer from 'inquirer';
-import { ForgeConfig, ForgeConfigSchema } from '../schemas/component';
+import { ForgeConfig, ForgeConfigSchema } from '../schemas/component.js';
 
 export async function initCommand(options: any) {
   const spinner = ora('Initializing Forge component library...').start();

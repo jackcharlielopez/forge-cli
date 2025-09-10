@@ -2,10 +2,10 @@ import fs from 'fs-extra';
 import path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
-import glob from 'glob';
-import { Component, ComponentSchema, ComponentRegistry, ForgeConfig } from '../schemas/component';
-import { loadForgeConfig } from '../utils/config';
-import { validateComponent } from '../utils/validation';
+import { glob } from 'glob';
+import { Component, ComponentSchema, ComponentRegistry, ForgeConfig } from '../schemas/component.js';
+import { loadForgeConfig } from '../utils/config.js';
+import { validateComponent } from '../utils/validation.js';
 
 export async function buildCommand(options: any) {
   const spinner = ora('Building component library...').start();
@@ -214,13 +214,13 @@ async function generateDocumentation(config: ForgeConfig, registry: ComponentReg
     <div class="mb-12">
       <h2 class="text-3xl font-bold mb-6">Components</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        ${registry.components.map(component => `
+        ${registry.components.map((component: Component) => `
           <div class="border rounded-lg p-6 hover:shadow-lg transition-shadow">
             <h3 class="text-xl font-semibold mb-2">${component.displayName}</h3>
             <p class="text-gray-600 mb-4">${component.description}</p>
             <div class="flex flex-wrap gap-2 mb-4">
               <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">${component.category}</span>
-              ${component.tags.map(tag => `<span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">${tag}</span>`).join('')}
+              ${component.tags.map((tag: string) => `<span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">${tag}</span>`).join('')}
             </div>
             <code class="bg-gray-100 p-2 rounded text-sm block">forge add ${component.name}</code>
           </div>
@@ -231,8 +231,8 @@ async function generateDocumentation(config: ForgeConfig, registry: ComponentReg
     <div>
       <h2 class="text-3xl font-bold mb-6">Categories</h2>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        ${registry.categories.map(category => {
-          const count = registry.components.filter(c => c.category === category).length;
+        ${registry.categories.map((category: string) => {
+          const count = registry.components.filter((c: Component) => c.category === category).length;
           return `
             <div class="text-center p-4 border rounded-lg">
               <div class="text-2xl font-bold text-blue-600">${count}</div>
@@ -305,7 +305,7 @@ async function generateDocumentation(config: ForgeConfig, registry: ComponentReg
     ${component.examples.length > 0 ? `
     <div class="mb-8">
       <h2 class="text-2xl font-bold mb-4">Examples</h2>
-      ${component.examples.map(example => `
+      ${component.examples.map((example: string) => `
         <div class="mb-4">
           <pre class="bg-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-jsx">${example}</code></pre>
         </div>
@@ -328,7 +328,7 @@ async function generateDocumentation(config: ForgeConfig, registry: ComponentReg
             </tr>
           </thead>
           <tbody>
-            ${component.props.map(prop => `
+            ${component.props.map((prop: any) => `
               <tr>
                 <td class="border border-gray-300 px-4 py-2 font-mono text-sm">${prop.name}</td>
                 <td class="border border-gray-300 px-4 py-2 font-mono text-sm">${prop.type}</td>
@@ -346,7 +346,7 @@ async function generateDocumentation(config: ForgeConfig, registry: ComponentReg
     <div class="mb-8">
       <h2 class="text-2xl font-bold mb-4">Files</h2>
       <ul class="space-y-2">
-        ${component.files.map(file => `
+        ${component.files.map((file: any) => `
           <li class="flex items-center gap-2">
             <span class="bg-gray-100 px-2 py-1 rounded text-xs font-mono">${file.type}</span>
             <code>${file.path}</code>
@@ -359,7 +359,7 @@ async function generateDocumentation(config: ForgeConfig, registry: ComponentReg
     <div class="mb-8">
       <h2 class="text-2xl font-bold mb-4">Dependencies</h2>
       <ul class="space-y-1">
-        ${component.dependencies.map(dep => `
+        ${component.dependencies?.map((dep: { name: string; version?: string; dev: boolean }) => `
           <li><code>${dep.name}${dep.version ? `@${dep.version}` : ''}</code></li>
         `).join('')}
       </ul>

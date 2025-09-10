@@ -2,6 +2,7 @@
   "name": "forge-cli",
   "version": "1.0.0",
   "description": "A powerful CLI for building and managing your own component library",
+  "type": "module",
   "main": "dist/index.js",
   "bin": {
     "forge": "dist/cli.js"
@@ -31,8 +32,8 @@
   "license": "MIT",
   "dependencies": {
     "commander": "^11.0.0",
-    "chalk": "^4.1.2",
-    "ora": "^5.4.1",
+    "chalk": "^5.3.0",
+    "ora": "^7.0.1",
     "inquirer": "^9.2.0",
     "fs-extra": "^11.1.1",
     "glob": "^10.3.0",

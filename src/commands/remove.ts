@@ -3,7 +3,7 @@ import path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
 import inquirer from 'inquirer';
-import { loadForgeConfig } from '../utils/config';
+import { loadForgeConfig } from '../utils/config.js';
 
 interface RemoveOptions {
   force?: boolean;

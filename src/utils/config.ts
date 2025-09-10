@@ -1,6 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
-import { ForgeConfig, ForgeConfigSchema } from '../schemas/component';
+import { ForgeConfig, ForgeConfigSchema } from '../schemas/component.js';
 
 export async function loadForgeConfig(cwd: string = process.cwd()): Promise<ForgeConfig> {
   const configPath = path.join(cwd, 'forge.config.json');

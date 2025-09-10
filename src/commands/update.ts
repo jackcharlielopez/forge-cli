@@ -3,8 +3,8 @@ import path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
 import semver from 'semver';
-import { loadForgeConfig } from '../utils/config';
-import { Component, ComponentSchema } from '../schemas/component';
+import { loadForgeConfig } from '../utils/config.js';
+import { Component, ComponentSchema } from '../schemas/component.js';
 
 export async function updateCommand(componentName: string) {
   const spinner = ora(`Updating component ${componentName}...`).start();

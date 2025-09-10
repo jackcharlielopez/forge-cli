@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import ora from 'ora';
-import { loadForgeConfig } from '../utils/config';
-import { run_in_terminal } from '../utils/terminal';
+import { loadForgeConfig } from '../utils/config.js';
+import { run_in_terminal } from '../utils/terminal.js';
 
 interface PublishOptions {
   message?: string;

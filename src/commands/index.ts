@@ -4,10 +4,10 @@ import chalk from 'chalk';
 import ora from 'ora';
 import inquirer from 'inquirer';
 import { execSync } from 'child_process';
-import glob from 'glob';
-import { Component, ComponentRegistry } from '../schemas/component';
-import { loadForgeConfig, updateForgeConfig } from '../utils/config';
-import { validateAllComponents } from '../utils/validation';
+import { glob } from 'glob';
+import { Component, ComponentRegistry } from '../schemas/component.js';
+import { loadForgeConfig, updateForgeConfig } from '../utils/config.js';
+import { validateAllComponents } from '../utils/validation.js';
 
 // List Command
 export async function listCommand(options: any) {
@@ -52,7 +52,7 @@ export async function listCommand(options: any) {
     for (const [category, comps] of Object.entries(groupedByCategory)) {
       console.log(chalk.bold(`${category.toUpperCase()}`));
       
-      comps.forEach(comp => {
+      (comps as Component[]).forEach((comp: Component) => {
         const tags = comp.tags.length > 0 ? chalk.gray(`[${comp.tags.join(', ')}]`) : '';
         console.log(`  ${chalk.green(comp.name)} - ${comp.description} ${tags}`);
       });
@@ -77,15 +77,15 @@ export async function validateCommand(options: any) {
     
     if (valid.length > 0) {
       console.log(chalk.green(`✅ Valid components (${valid.length}):`));
-      valid.forEach(comp => console.log(chalk.gray(`  ✓ ${comp.name}`)));
+      valid.forEach((comp: Component) => console.log(chalk.gray(`  ✓ ${comp.name}`)));
       console.log();
     }
 
     if (invalid.length > 0) {
       console.log(chalk.red(`❌ Invalid components (${invalid.length}):`));
-      invalid.forEach(({ component, errors }) => {
+      invalid.forEach(({ component, errors }: { component: string; errors: string[] }) => {
         console.log(chalk.red(`  ✗ ${component}:`));
-        errors.forEach(error => console.log(chalk.gray(`    - ${error}`)));
+        errors.forEach((error: string) => console.log(chalk.gray(`    - ${error}`)));
       });
       console.log();
 
@@ -213,7 +213,7 @@ export async function searchCommand(query: string, options: any) {
           component.name.toLowerCase().includes(searchTerm) ||
           component.displayName.toLowerCase().includes(searchTerm) ||
           component.description.toLowerCase().includes(searchTerm) ||
-          component.tags.some(tag => tag.toLowerCase().includes(searchTerm));
+          component.tags.some((tag: string) => tag.toLowerCase().includes(searchTerm));
 
         if (matches) {
           // Apply category filter
