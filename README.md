@@ -1,6 +1,6 @@
 # 🔥 Forge - Component Library Template
 
-**Forge** is a powerful CLI template that lets you build your own component library with shadcn-like functionality. Create, manage, and distribute your components with ease..
+**Forge** is a powerful CLI template that lets you build your own component library with shadcn-like functionality. Create, manage, and distribute your components with ease.
 
 ## ✨ Features
 
