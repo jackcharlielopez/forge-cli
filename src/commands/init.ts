@@ -126,8 +126,6 @@ export async function initCommand(options: any) {
     const dirs = [
       validatedConfig.componentsDir,
       validatedConfig.outputDir,
-      'src/examples',
-      'src/docs',
       '.forge'
     ];
 
@@ -137,8 +135,6 @@ export async function initCommand(options: any) {
 
     // Add starter files to empty directories
     await fs.writeFile('.forge/README.md', '# .forge\n\nThis directory contains configuration and metadata for the forge CLI.');
-    await fs.writeFile('src/docs/README.md', '# Documentation\n\nAdd your custom documentation files here.\n\nYou can override the default documentation by creating markdown files in this directory.');
-    await fs.writeFile('src/examples/README.md', '# Examples\n\nThis directory contains example usage of your components.\nAdd example applications and implementations here to showcase your components.');
 
     // Create .gitignore file
     const gitignoreContent = `# Dependencies
@@ -392,7 +388,7 @@ jobs:
 }
 
 async function createExampleComponent(config: ForgeConfig) {
-  const componentDir = path.join('src/examples/button');
+  const componentDir = path.join(validatedConfig.componentsDir, 'button');
   await fs.ensureDir(componentDir);
 
   const extension = config.typescript ? 'ts' : 'js';
