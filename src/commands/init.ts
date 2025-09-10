@@ -98,11 +98,15 @@ export async function initCommand(options: any) {
       'src/examples',
       'src/docs',
       '.forge',
+      'stories'
     ];
 
     for (const dir of dirs) {
       await fs.ensureDir(dir);
     }
+    
+    // Copy .gitignore template
+    await fs.copy(path.join(__dirname, '../../templates/.gitignore'), '.gitignore');
 
     // Create config file
     await fs.writeJSON('forge.config.json', validatedConfig, { spaces: 2 });
@@ -124,6 +128,10 @@ export async function initCommand(options: any) {
 
     await fs.writeJSON(path.join(validatedConfig.outputDir, 'registry.json'), initialRegistry, { spaces: 2 });
 
+    // Copy Storybook configuration
+    await fs.copy(path.join(__dirname, '../../templates/.storybook'), '.storybook');
+    await fs.copy(path.join(__dirname, '../../templates/stories'), 'stories');
+
     // Create package.json for the component library
     const packageJson = {
       name: `@${validatedConfig.author?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'your-org'}/${validatedConfig.name}`,
@@ -137,10 +145,26 @@ export async function initCommand(options: any) {
         'forge:build': 'forge build',
         'forge:validate': 'forge validate',
         'forge:publish': 'forge publish',
+        'storybook': 'storybook dev -p 6006',
+        'build-storybook': 'storybook build'
       },
       devDependencies: {
         'forge-cli': '^1.0.0',
+        '@storybook/addon-essentials': '^7.4.0',
+        '@storybook/addon-interactions': '^7.4.0',
+        '@storybook/addon-links': '^7.4.0',
+        '@storybook/blocks': '^7.4.0',
+        '@storybook/react': '^7.4.0',
+        '@storybook/react-vite': '^7.4.0',
+        '@storybook/testing-library': '^0.2.0',
+        'storybook': '^7.4.0',
+        '@vitejs/plugin-react': '^4.0.0',
+        'vite': '^4.4.0'
       },
+      dependencies: {
+        'react': '^18.2.0',
+        'react-dom': '^18.2.0'
+      }
     };
 
     await fs.writeJSON('package.json', packageJson, { spaces: 2 });

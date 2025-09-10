@@ -3,11 +3,12 @@ import path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
 import { glob } from 'glob';
+import { execSync } from 'child_process';
 import { Component, ComponentSchema, ComponentRegistry, ForgeConfig } from '../schemas/component.js';
 import { loadForgeConfig } from '../utils/config.js';
 import { validateComponent } from '../utils/validation.js';
 
-export async function buildCommand(options: any) {
+export const buildCommand = async (options: any) => {
   const spinner = ora('Building component library...').start();
   
   try {
@@ -145,6 +146,15 @@ export async function buildCommand(options: any) {
     // Generate dependency manifest
     await generateDependencyManifest(config, components);
 
+    // Build Storybook
+    spinner.start('Building Storybook...');
+    try {
+      execSync('npm run build-storybook', { stdio: 'inherit' });
+      spinner.succeed('Storybook built successfully!');
+    } catch (error) {
+      spinner.warn('Storybook build failed. You may need to run npm install first.');
+    }
+
     spinner.succeed(`Built ${components.length} components successfully!`);
 
     // Summary
@@ -160,6 +170,7 @@ export async function buildCommand(options: any) {
       console.log(chalk.gray(`  ${config.outputDir}/components/`));
       console.log(chalk.gray(`  ${config.outputDir}/docs/`));
       console.log(chalk.gray(`  ${config.outputDir}/index.json`));
+      console.log(chalk.gray(`  ${config.outputDir}/storybook-static/`));
     }
 
   } catch (error) {
@@ -355,7 +366,7 @@ async function generateDocumentation(config: ForgeConfig, registry: ComponentReg
       </ul>
     </div>
 
-    ${component.dependencies.length > 0 ? `
+    ${component.dependencies?.length > 0 ? `
     <div class="mb-8">
       <h2 class="text-2xl font-bold mb-4">Dependencies</h2>
       <ul class="space-y-1">
@@ -399,13 +410,17 @@ async function generateDependencyManifest(config: ForgeConfig, components: Compo
 
   // Collect all dependencies
   for (const component of components) {
-    for (const dep of component.dependencies) {
-      if (!dep.dev) {
-        allDependencies.set(dep.name, dep.version || 'latest');
+    if (component.dependencies) {
+      for (const dep of component.dependencies) {
+        if (!dep.dev) {
+          allDependencies.set(dep.name, dep.version || 'latest');
+        }
       }
     }
-    for (const peerDep of component.peerDependencies) {
-      allPeerDependencies.set(peerDep.name, peerDep.version || 'latest');
+    if (component.peerDependencies) {
+      for (const peerDep of component.peerDependencies) {
+        allPeerDependencies.set(peerDep.name, peerDep.version || 'latest');
+      }
     }
   }
 
