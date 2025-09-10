@@ -83,7 +83,6 @@ export const ForgeConfigSchema = z.object({
   // Directories
   componentsDir: z.string().default('src/components'),
   outputDir: z.string().default('public'),
-  templatesDir: z.string().default('templates'),
   
   // Registry settings
   registryUrl: z.string().optional(),

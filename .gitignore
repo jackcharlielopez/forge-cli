@@ -9,6 +9,7 @@ yarn-error.log*
 dist/
 build/
 public/
+storybook-static/
 
 # TypeScript
 *.tsbuildinfo
@@ -38,6 +39,19 @@ coverage/
 .temp/
 .cache/
 
-# Forge specific
+# Generated directories
 .forge/
+.storybook/
+
+# Track .github workflow files
+!.github/
+!.github/workflows/
+
+# Logs and debugging
+*.log
+debug.log*
 forge.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*

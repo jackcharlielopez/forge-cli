@@ -126,7 +126,6 @@ export async function initCommand(options: any) {
     const dirs = [
       validatedConfig.componentsDir,
       validatedConfig.outputDir,
-      validatedConfig.templatesDir,
       'src/examples',
       'src/docs',
       '.forge'
@@ -140,10 +139,67 @@ export async function initCommand(options: any) {
     await fs.writeFile('.forge/README.md', '# .forge\n\nThis directory contains configuration and metadata for the forge CLI.');
     await fs.writeFile('src/docs/README.md', '# Documentation\n\nAdd your custom documentation files here.\n\nYou can override the default documentation by creating markdown files in this directory.');
     await fs.writeFile('src/examples/README.md', '# Examples\n\nThis directory contains example usage of your components.\nAdd example applications and implementations here to showcase your components.');
-    
-    // Copy .gitignore template
-    const templatePath = fileURLToPath(new URL('../../templates/.gitignore', import.meta.url));
-    await fs.copy(templatePath, '.gitignore');
+
+    // Create .gitignore file
+    const gitignoreContent = `# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Build output
+dist/
+build/
+public/
+storybook-static/
+
+# TypeScript
+*.tsbuildinfo
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.npmrc
+
+# IDE and editor files
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+*.swp
+*.swo
+.DS_Store
+
+# Test coverage
+coverage/
+
+# Temporary files
+.tmp/
+.temp/
+.cache/
+
+# Generated directories
+.forge/
+.storybook/
+
+# Track .github workflow files
+!.github/
+!.github/workflows/
+
+# Logs and debugging
+*.log
+debug.log*
+forge.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*`;
+
+    await fs.writeFile('.gitignore', gitignoreContent);
 
     // Create config file
     await fs.writeJSON('forge.config.json', validatedConfig, { spaces: 2 });
