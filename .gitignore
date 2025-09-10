@@ -17,6 +17,7 @@ public/
 .env
 .env.local
 .env.*.local
+.npmrc
 
 # IDE and editor files
 .idea/
