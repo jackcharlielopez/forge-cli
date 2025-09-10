@@ -13,7 +13,17 @@ export async function addCommand(componentName?: string, options?: any) {
     const config = await loadForgeConfig();
     spinner.stop();
 
-    let component: Partial<Component> = {};
+    interface ComponentInput {
+      name?: string;
+      displayName?: string;
+      description?: string;
+      category?: string;
+      tags?: string[];
+      useTypeScript?: boolean;
+      template?: string;
+    }
+
+    let component: ComponentInput = {};
 
     // Interactive mode or direct creation
     if (options?.interactive || !componentName) {
@@ -107,7 +117,7 @@ export async function addCommand(componentName?: string, options?: any) {
         description: `A ${componentName} component`,
         category: options?.category || config.defaultCategory,
         tags: [],
-        typescript: config.typescript,
+        useTypeScript: config.typescript,
       };
     }
 
@@ -136,6 +146,7 @@ export async function addCommand(componentName?: string, options?: any) {
       description: component.description!,
       category: component.category!,
       version: '1.0.0',
+      license: 'MIT',
       tags: (component as any).tags || [],
       props: [],
       dependencies: [],
@@ -143,13 +154,23 @@ export async function addCommand(componentName?: string, options?: any) {
       files: [],
       examples: [],
       registryDependencies: [],
+      private: false,
+      deprecated: false,
+      experimental: false,
     };
+
+    interface TemplateFile {
+      name: string;
+      filename: string;
+      type: 'component' | 'hook' | 'utility' | 'type';
+      content: string;
+    }
 
     // Generate files based on template
     const templateData = await generateTemplate(template, componentName!, useTypeScript);
     
     // Add files to component definition
-    componentDef.files = templateData.files.map(file => ({
+    componentDef.files = templateData.files.map((file: TemplateFile) => ({
       name: file.name,
       path: file.filename,
       type: file.type,
@@ -160,7 +181,7 @@ export async function addCommand(componentName?: string, options?: any) {
     componentDef.examples = templateData.examples || [];
 
     // Write files
-    for (const file of templateData.files) {
+    for (const file of templateData.files as TemplateFile[]) {
       await fs.writeFile(path.join(componentDir, file.filename), file.content);
     }
 
@@ -178,7 +199,7 @@ export async function addCommand(componentName?: string, options?: any) {
 
     // Show next steps
     console.log(chalk.blue('\n📁 Files created:'));
-    templateData.files.forEach(file => {
+    templateData.files.forEach((file: TemplateFile) => {
       console.log(chalk.gray(`  ${componentDir}/${file.filename}`));
     });
     console.log(chalk.gray(`  ${componentDir}/component.json`));

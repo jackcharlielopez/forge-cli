@@ -209,11 +209,17 @@ jobs:
     - name: Install dependencies
       run: npm ci
     
+    - name: Build CLI
+      run: npm run build
+    
+    - name: Link CLI locally
+      run: npm link
+    
     - name: Validate components
-      run: npm run forge:validate
+      run: npx forge validate
     
     - name: Build component library
-      run: npm run forge:build
+      run: npx forge build
     
     - name: Run tests
       run: npm test
@@ -222,7 +228,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
       with:
-        path: ${config.outputDir}
+        path: \${config.outputDir}
 
   deploy:
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
@@ -235,8 +241,7 @@ jobs:
     steps:
     - name: Deploy to GitHub Pages
       id: deployment
-      uses: actions/deploy-pages@v4
-`;
+      uses: actions/deploy-pages@v4`;
 
   await fs.writeFile(path.join(workflowDir, 'forge.yml'), workflow);
 }
@@ -287,12 +292,12 @@ async function createExampleComponent(config: ForgeConfig) {
     files: [
       {
         name: 'button',
-        path: \`button.\${componentExt}\`,
+        path: `button.${componentExt}`,
         type: 'component' as const,
       },
       {
         name: 'button-types',
-        path: \`button.types.\${extension}\`,
+        path: `button.types.${extension}`,
         type: 'type' as const,
       },
     ],

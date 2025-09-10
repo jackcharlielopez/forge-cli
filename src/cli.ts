@@ -82,7 +82,7 @@ program
 program
   .command('remove')
   .description('Remove a component from the library')
-  .argument '<component-name>' 'Name of the component to remove')
+  .argument('<component-name>', 'Name of the component to remove')
   .option('-f, --force', 'Force removal without confirmation')
   .action(removeCommand);
 
