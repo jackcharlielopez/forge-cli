@@ -98,13 +98,17 @@ export async function initCommand(options: any) {
       validatedConfig.templatesDir,
       'src/examples',
       'src/docs',
-      '.forge',
-      'stories'
+      '.forge'
     ];
 
     for (const dir of dirs) {
       await fs.ensureDir(dir);
     }
+
+    // Add starter files to empty directories
+    await fs.writeFile('.forge/README.md', '# .forge\n\nThis directory contains configuration and metadata for the forge CLI.');
+    await fs.writeFile('src/docs/README.md', '# Documentation\n\nAdd your custom documentation files here.\n\nYou can override the default documentation by creating markdown files in this directory.');
+    await fs.writeFile('src/examples/README.md', '# Examples\n\nThis directory contains example usage of your components.\nAdd example applications and implementations here to showcase your components.');
     
     // Copy .gitignore template
     const templatePath = fileURLToPath(new URL('../../templates/.gitignore', import.meta.url));
@@ -132,9 +136,7 @@ export async function initCommand(options: any) {
 
     // Copy Storybook configuration
     const storybookTemplatePath = fileURLToPath(new URL('../../templates/.storybook', import.meta.url));
-    const storiesTemplatePath = fileURLToPath(new URL('../../templates/stories', import.meta.url));
     await fs.copy(storybookTemplatePath, '.storybook');
-    await fs.copy(storiesTemplatePath, 'stories');
 
     // Create package.json for the component library
     const packageJson = {
@@ -275,7 +277,7 @@ jobs:
 }
 
 async function createExampleComponent(config: ForgeConfig) {
-  const componentDir = path.join(config.componentsDir, 'button');
+  const componentDir = path.join('src/examples/button');
   await fs.ensureDir(componentDir);
 
   const extension = config.typescript ? 'ts' : 'js';
@@ -427,6 +429,59 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
     await fs.writeFile(path.join(componentDir, `button.types.${extension}`), buttonTypes);
   }
+
+  // Add co-located story file
+  const storyContent = `import type { Meta, StoryObj } from '@storybook/react';
+import { Button } from './button';
+
+const meta: Meta<typeof Button> = {
+  title: 'Example/Button',
+  component: Button,
+  tags: ['autodocs'],
+  argTypes: {
+    variant: {
+      control: 'select',
+      options: ['primary', 'secondary', 'destructive']
+    },
+    size: {
+      control: 'select',
+      options: ['sm', 'md', 'lg']
+    }
+  }
+};
+
+export default meta;
+type Story = StoryObj<typeof Button>;
+
+export const Primary: Story = {
+  args: {
+    variant: 'primary',
+    children: 'Button',
+  }
+};
+
+export const Secondary: Story = {
+  args: {
+    variant: 'secondary',
+    children: 'Button',
+  }
+};
+
+export const Large: Story = {
+  args: {
+    size: 'lg',
+    children: 'Button',
+  }
+};
+
+export const Small: Story = {
+  args: {
+    size: 'sm',
+    children: 'Button',
+  }
+};`;
+
+  await fs.writeFile(path.join(componentDir, `button.stories.${componentExt}`), storyContent);
 }
 
 async function createReadme(config: ForgeConfig) {
