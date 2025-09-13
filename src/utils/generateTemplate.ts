@@ -1,16 +1,22 @@
-
-import fs from 'fs-extra';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from "fs-extra";
+import path from "path";
+import { fileURLToPath } from "url";
 
 /**
  * Reads all files from a component template directory and returns them as template files.
  * Throws an error if the template directory or any required file is missing.
  */
-export async function generateTemplate(template: string, componentName: string, useTypeScript: boolean) {
+export async function generateTemplate(
+  template: string,
+  componentName: string,
+  useTypeScript: boolean,
+) {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
-  const templateDir = path.join(__dirname, `../../templates/components/${template}`);
+  const templateDir = path.join(
+    __dirname,
+    `../../templates/components/${template}`,
+  );
 
   // Check if template directory exists
   if (!(await fs.pathExists(templateDir))) {
@@ -24,16 +30,18 @@ export async function generateTemplate(template: string, componentName: string, 
   }
 
   // Read and return all template files
-  const templateFiles = await Promise.all(files.map(async (filename) => {
-    const filePath = path.join(templateDir, filename);
-    const content = await fs.readFile(filePath, 'utf8');
-    return {
-      name: componentName,
-      filename: filename,
-      type: 'component', // Could be improved by inferring from filename
-      content,
-    };
-  }));
+  const templateFiles = await Promise.all(
+    files.map(async (filename) => {
+      const filePath = path.join(templateDir, filename);
+      const content = await fs.readFile(filePath, "utf8");
+      return {
+        name: componentName,
+        filename: filename,
+        type: "component", // Could be improved by inferring from filename
+        content,
+      };
+    }),
+  );
 
   return {
     files: templateFiles,

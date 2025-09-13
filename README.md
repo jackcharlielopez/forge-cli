@@ -6,7 +6,7 @@
 
 - 🎯 **CLI-First**: Intuitive command-line interface for component management
 - 📦 **Component Registry**: Automatic registry generation like shadcn/ui
-- 🔐 **Private Support**: Token-based authentication for private components  
+- 🔐 **Private Support**: Token-based authentication for private components
 - 🏗️ **Multiple Templates**: Pre-built templates for buttons, inputs, hooks, and more
 - 📖 **Auto Documentation**: Generates beautiful documentation automatically
 - 🚀 **GitHub Pages**: One-command deployment to GitHub Pages
@@ -46,6 +46,7 @@ forge publish
 ## 📚 Commands
 
 ### `forge init`
+
 Initialize a new component library
 
 ```bash
@@ -57,6 +58,7 @@ forge init [options]
 ```
 
 ### `forge add`
+
 Add a new component
 
 ```bash
@@ -67,6 +69,7 @@ forge add <component-name> [options]
 ```
 
 ### `forge build`
+
 Build the component library
 
 ```bash
@@ -76,6 +79,7 @@ forge build [options]
 ```
 
 ### `forge list`
+
 List all components
 
 ```bash
@@ -86,6 +90,7 @@ forge list [options]
 ```
 
 ### `forge validate`
+
 Validate all components
 
 ```bash
@@ -94,6 +99,7 @@ forge validate [options]
 ```
 
 ### `forge publish`
+
 Publish to GitHub Pages
 
 ```bash
@@ -220,18 +226,18 @@ You can extend Forge by adding custom templates to the `templates/` directory:
 export const myTemplate = {
   files: [
     {
-      name: 'component',
-      filename: 'component.tsx',
-      type: 'component',
-      content: `// Your template content here`
-    }
+      name: "component",
+      filename: "component.tsx",
+      type: "component",
+      content: `// Your template content here`,
+    },
   ],
   props: [
     // Default props for this template
   ],
   examples: [
     // Usage examples
-  ]
+  ],
 };
 ```
 
@@ -242,6 +248,7 @@ Forge supports private component libraries with token authentication:
 ### Setup Private Registry
 
 1. **Enable in config:**
+
 ```json
 {
   "tokenRequired": true,
@@ -250,11 +257,13 @@ Forge supports private component libraries with token authentication:
 ```
 
 2. **Set authentication token:**
+
 ```bash
 forge config --set token=your-private-token
 ```
 
 3. **Components marked as private:**
+
 ```json
 {
   "name": "premium-button",
@@ -400,7 +409,7 @@ For large organizations, set up multiple component libraries:
 ```
 packages/
 ├── core/              # Base components
-├── marketing/         # Marketing components  
+├── marketing/         # Marketing components
 ├── admin/            # Admin components
 └── mobile/           # Mobile-specific components
 ```
@@ -422,14 +431,14 @@ Extend Forge with custom commands:
 
 ```typescript
 // scripts/custom-command.ts
-import { Command } from 'commander';
+import { Command } from "commander";
 
 export function customCommand() {
   const program = new Command();
-  
+
   program
-    .command('my-command')
-    .description('My custom command')
+    .command("my-command")
+    .description("My custom command")
     .action(() => {
       // Your custom logic
     });

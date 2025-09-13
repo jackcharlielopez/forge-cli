@@ -26,14 +26,10 @@ npx @forge/cli add button
 ## Usage
 
 ```jsx
-import { Button } from './{{componentsDir}}/button';
+import { Button } from "./{{componentsDir}}/button";
 
 function App() {
-  return (
-    <Button variant="primary">
-      Click me
-    </Button>
-  );
+  return <Button variant="primary">Click me</Button>;
 }
 ```
 

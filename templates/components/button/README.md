@@ -53,13 +53,13 @@ import { Button } from '@your-lib/components';
 
 ## Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `variant` | `'default' \| 'secondary' \| 'destructive' \| 'outline' \| 'ghost' \| 'link'` | `'default'` | The visual style variant of the button |
-| `size` | `'default' \| 'sm' \| 'lg' \| 'icon'` | `'default'` | The size of the button |
-| `loading` | `boolean` | `false` | Whether the button is in a loading state |
-| `asChild` | `boolean` | `false` | Whether to merge props onto child element |
-| `className` | `string` | `''` | Additional CSS classes |
+| Prop        | Type                                                                          | Default     | Description                               |
+| ----------- | ----------------------------------------------------------------------------- | ----------- | ----------------------------------------- |
+| `variant`   | `'default' \| 'secondary' \| 'destructive' \| 'outline' \| 'ghost' \| 'link'` | `'default'` | The visual style variant of the button    |
+| `size`      | `'default' \| 'sm' \| 'lg' \| 'icon'`                                         | `'default'` | The size of the button                    |
+| `loading`   | `boolean`                                                                     | `false`     | Whether the button is in a loading state  |
+| `asChild`   | `boolean`                                                                     | `false`     | Whether to merge props onto child element |
+| `className` | `string`                                                                      | `''`        | Additional CSS classes                    |
 
 Plus all standard HTML button attributes.
 
@@ -86,11 +86,13 @@ The component uses Tailwind CSS classes and supports theme customization through
 ## Examples
 
 ### Basic Button
+
 ```tsx
 <Button>Click me</Button>
 ```
 
 ### Loading Button with Icon
+
 ```tsx
 <Button loading>
   <Icon className="mr-2" />
@@ -99,6 +101,7 @@ The component uses Tailwind CSS classes and supports theme customization through
 ```
 
 ### Link-styled Button
+
 ```tsx
 <Button variant="link" href="#" onClick={(e) => e.preventDefault()}>
   Learn more

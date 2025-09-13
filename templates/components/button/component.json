@@ -1,0 +1,44 @@
+{
+  "name": "button",
+  "displayName": "Button",
+  "description": "A button component",
+  "category": "ui",
+  "version": "1.0.0",
+  "license": "MIT",
+  "props": [],
+  "dependencies": [],
+  "peerDependencies": [],
+  "files": [
+    {
+      "name": "button",
+      "path": "README.md",
+      "type": "component"
+    },
+    {
+      "name": "button",
+      "path": "button.stories.tsx",
+      "type": "component"
+    },
+    {
+      "name": "button",
+      "path": "button.test.tsx",
+      "type": "component"
+    },
+    {
+      "name": "button",
+      "path": "button.tsx",
+      "type": "component"
+    },
+    {
+      "name": "button",
+      "path": "variants.ts",
+      "type": "component"
+    }
+  ],
+  "examples": [],
+  "registryDependencies": [],
+  "tags": [],
+  "private": false,
+  "deprecated": false,
+  "experimental": false
+}

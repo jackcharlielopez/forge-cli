@@ -1,29 +1,33 @@
-import fs from 'fs-extra';
-import path from 'path';
-import { Component } from '../schemas/component.js';
+import fs from "fs-extra";
+import path from "path";
+import { Component } from "../schemas/component.js";
 
 export async function validateComponent(
-  component: Component, 
-  componentDir: string
+  component: Component,
+  componentDir: string,
 ): Promise<string[]> {
   const errors: string[] = [];
 
   // Check for nested components
   const hasNestedComponents = await checkForNestedComponents(componentDir);
   if (hasNestedComponents) {
-    errors.push('Components cannot be nested. Each component should be in its own directory.');
+    errors.push(
+      "Components cannot be nested. Each component should be in its own directory.",
+    );
   }
 
   // Validate file extensions
   for (const file of component.files) {
     const filePath = path.join(componentDir, file.path);
     const ext = path.extname(file.path);
-    
-    if (file.type === 'component' && !['.tsx', '.jsx'].includes(ext)) {
-      errors.push(`Component file ${file.path} should have .tsx or .jsx extension`);
+
+    if (file.type === "component" && ![".tsx", ".jsx"].includes(ext)) {
+      errors.push(
+        `Component file ${file.path} should have .tsx or .jsx extension`,
+      );
     }
-    
-    if (file.type === 'type' && !['.ts', '.d.ts'].includes(ext)) {
+
+    if (file.type === "type" && ![".ts", ".d.ts"].includes(ext)) {
       errors.push(`Type file ${file.path} should have .ts or .d.ts extension`);
     }
 
@@ -38,17 +42,17 @@ export async function validateComponent(
 
   // Validate component syntax (basic check)
   for (const file of component.files) {
-    if (file.type === 'component') {
+    if (file.type === "component") {
       const filePath = path.join(componentDir, file.path);
-      const content = await fs.readFile(filePath, 'utf-8');
-      
+      const content = await fs.readFile(filePath, "utf-8");
+
       // Basic syntax validation
-      if (!content.includes('export')) {
+      if (!content.includes("export")) {
         errors.push(`Component file ${file.path} should export the component`);
       }
-      
-      if (file.path.endsWith('.tsx') || file.path.endsWith('.jsx')) {
-        if (!content.includes('import React')) {
+
+      if (file.path.endsWith(".tsx") || file.path.endsWith(".jsx")) {
+        if (!content.includes("import React")) {
           errors.push(`React component ${file.path} should import React`);
         }
       }
@@ -60,39 +64,43 @@ export async function validateComponent(
     if (!prop.name || !prop.type) {
       errors.push(`Invalid prop definition: name and type are required`);
     }
-    
+
     if (prop.required && prop.default !== undefined) {
-      errors.push(`Prop ${prop.name} cannot be both required and have a default value`);
+      errors.push(
+        `Prop ${prop.name} cannot be both required and have a default value`,
+      );
     }
   }
 
   // Check for circular dependencies
   const circularDeps = await checkCircularDependencies(component, componentDir);
   if (circularDeps.length > 0) {
-    errors.push(`Circular dependencies detected: ${circularDeps.join(', ')}`);
+    errors.push(`Circular dependencies detected: ${circularDeps.join(", ")}`);
   }
 
   return errors;
 }
 
-async function checkForNestedComponents(componentDir: string): Promise<boolean> {
+async function checkForNestedComponents(
+  componentDir: string,
+): Promise<boolean> {
   const entries = await fs.readdir(componentDir, { withFileTypes: true });
-  
+
   for (const entry of entries) {
     if (entry.isDirectory()) {
-      const nestedPath = path.join(componentDir, entry.name, 'component.json');
+      const nestedPath = path.join(componentDir, entry.name, "component.json");
       if (await fs.pathExists(nestedPath)) {
         return true;
       }
     }
   }
-  
+
   return false;
 }
 
 async function checkCircularDependencies(
-  component: Component, 
-  componentDir: string
+  component: Component,
+  componentDir: string,
 ): Promise<string[]> {
   const visited = new Set<string>();
   const recursionStack = new Set<string>();
@@ -103,7 +111,7 @@ async function checkCircularDependencies(
       cycles.push(compName);
       return;
     }
-    
+
     if (visited.has(compName)) {
       return;
     }
@@ -114,7 +122,7 @@ async function checkCircularDependencies(
     // Check registry dependencies
     for (const dep of component.registryDependencies) {
       const depDir = path.join(path.dirname(compDir), dep);
-      if (await fs.pathExists(path.join(depDir, 'component.json'))) {
+      if (await fs.pathExists(path.join(depDir, "component.json"))) {
         await dfs(dep, depDir);
       }
     }
@@ -130,9 +138,11 @@ export async function validateAllComponents(componentsDir: string): Promise<{
   valid: Component[];
   invalid: Array<{ component: string; errors: string[] }>;
 }> {
-  const glob = require('glob');
-  const componentPaths = glob.sync(path.join(componentsDir, '**/component.json'));
-  
+  const glob = require("glob");
+  const componentPaths = glob.sync(
+    path.join(componentsDir, "**/component.json"),
+  );
+
   const valid: Component[] = [];
   const invalid: Array<{ component: string; errors: string[] }> = [];
 
@@ -141,9 +151,9 @@ export async function validateAllComponents(componentsDir: string): Promise<{
       const componentData = await fs.readJSON(componentPath);
       const component = componentData as Component;
       const componentDir = path.dirname(componentPath);
-      
+
       const errors = await validateComponent(component, componentDir);
-      
+
       if (errors.length === 0) {
         valid.push(component);
       } else {
@@ -152,7 +162,9 @@ export async function validateAllComponents(componentsDir: string): Promise<{
     } catch (error) {
       invalid.push({
         component: path.basename(path.dirname(componentPath)),
-        errors: [`Failed to parse component: ${error instanceof Error ? error.message : 'Unknown error'}`],
+        errors: [
+          `Failed to parse component: ${error instanceof Error ? error.message : "Unknown error"}`,
+        ],
       });
     }
   }

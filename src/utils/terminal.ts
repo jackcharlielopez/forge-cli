@@ -1,5 +1,5 @@
-import { exec } from 'child_process';
-import { promisify } from 'util';
+import { exec } from "child_process";
+import { promisify } from "util";
 
 const execAsync = promisify(exec);
 
@@ -14,9 +14,9 @@ export async function run_in_terminal(command: string): Promise<CommandResult> {
     const { stdout, stderr } = await execAsync(command);
     return { stdout, stderr, exitCode: 0 };
   } catch (error) {
-    if (error instanceof Error && 'code' in error) {
+    if (error instanceof Error && "code" in error) {
       return {
-        stdout: '',
+        stdout: "",
         stderr: error.message,
         exitCode: (error as any).code || 1,
       };
