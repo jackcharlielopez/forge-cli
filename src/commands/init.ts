@@ -1,668 +1,236 @@
-import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import chalk from 'chalk';
-import ora from 'ora';
-import inquirer from 'inquirer';
-import { ForgeConfig, ForgeConfigSchema } from '../schemas/component.js';
 
-interface InitAnswers {
+// Fix __dirname for ES module context
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+import fs from 'fs-extra';
+import ora from 'ora';
+import chalk from 'chalk';
+import { execSync } from 'child_process';
+import { ForgeConfigSchema } from '../schemas/component.js';
+
+interface InitOptions {
   name?: string;
   description?: string;
-  author?: string;
-  repository?: string;
   typescript?: boolean;
   tailwind?: boolean;
-  tokenRequired?: boolean;
-  categories?: string[];
-  setupGitHub?: boolean;
-  githubToken?: string;
 }
 
-export async function initCommand(options: any) {
-  const spinner = ora('Initializing Forge component library...').start();
-  
+export async function initCommand(options: InitOptions = {}) {
+  // Copy .gitignore from template
+  const gitignoreSrc = path.join(__dirname, '../../templates/.gitignore');
+  const gitignoreDest = '.gitignore';
+  await fs.copyFile(gitignoreSrc, gitignoreDest);
+  const spinner = ora('Initializing component library...').start();
+
   try {
-    // Check if already initialized
-    if (await fs.pathExists('forge.config.json')) {
-      spinner.fail('Forge is already initialized in this directory');
-      return;
-    }
-
-    spinner.stop();
-
-    // Interactive setup if name is not provided
-    let config: Partial<ForgeConfig> = {
-      name: options.name,
-      typescript: options.typescript !== false,
-      tailwind: options.tailwind !== false,
-    };
-
-    let answers: InitAnswers = {};
-
-    if (!config.name) {
-      answers = await inquirer.prompt([
-        {
-          type: 'input',
-          name: 'name',
-          message: 'What is the name of your component library?',
-          validate: (input) => input.trim().length > 0 || 'Name is required',
-          filter: (input) => input.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-'),
-        },
-        {
-          type: 'input',
-          name: 'description',
-          message: 'Describe your component library:',
-        },
-        {
-          type: 'input',
-          name: 'author',
-          message: 'Author name:',
-        },
-        {
-          type: 'input',
-          name: 'repository',
-          message: 'Repository URL (optional):',
-        },
-        {
-          type: 'confirm',
-          name: 'typescript',
-          message: 'Use TypeScript?',
-          default: true,
-        },
-        {
-          type: 'confirm',
-          name: 'tailwind',
-          message: 'Use Tailwind CSS?',
-          default: true,
-        },
-        {
-          type: 'confirm',
-          name: 'tokenRequired',
-          message: 'Require authentication token for private components?',
-          default: false,
-        },
-        {
-          type: 'checkbox',
-          name: 'categories',
-          message: 'Select default component categories:',
-          choices: [
-            { name: 'UI Components', value: 'ui', checked: true },
-            { name: 'Forms', value: 'forms', checked: true },
-            { name: 'Layout', value: 'layout', checked: true },
-            { name: 'Navigation', value: 'navigation', checked: true },
-            { name: 'Data Display', value: 'data-display' },
-            { name: 'Feedback', value: 'feedback' },
-            { name: 'Utilities', value: 'utilities' },
-          ],
-        },
-        {
-          type: 'confirm',
-          name: 'setupGitHub',
-          message: 'Would you like to set up GitHub Packages authentication now?',
-          default: true,
-        },
-        {
-          type: 'password',
-          name: 'githubToken',
-          message: 'Enter your GitHub Personal Access Token (needs packages:read permission):',
-          when: (answers) => answers.setupGitHub,
-          validate: (input) => {
-            if (!input && input.length < 1) return 'Token is required for GitHub Packages';
-            return true;
-          },
-        },
-      ]);
-
-      config = { ...config, ...answers };
-    }
-
-    spinner.start('Creating configuration...');
-
-    // Validate and create config
-    const validatedConfig = ForgeConfigSchema.parse(config);
+    const cwd = process.cwd();
+    
+    // Create the initial config
+    const config = ForgeConfigSchema.parse({
+      name: options.name || path.basename(cwd),
+      description: options.description,
+      typescript: options.typescript ?? true,
+      tailwind: options.tailwind ?? true,
+      componentsDir: 'src/components',
+      outputDir: 'dist',
+      license: 'MIT',
+      categories: ['ui', 'forms', 'layout', 'navigation'],
+      defaultCategory: 'ui'
+    });
 
     // Create directory structure
-    const dirs = [
-      validatedConfig.componentsDir,
-      validatedConfig.outputDir,
-      '.forge'
-    ];
+    await fs.ensureDir(config.componentsDir);
+    await fs.ensureDir(config.outputDir);
+    await fs.ensureDir('.forge');
+    await fs.ensureDir('src/utils');
 
-    for (const dir of dirs) {
-      await fs.ensureDir(dir);
-    }
 
-    // Add starter files to empty directories
-    await fs.writeFile('.forge/README.md', '# .forge\n\nThis directory contains configuration and metadata for the forge CLI.');
+  // Copy global CSS from template
+  await fs.ensureDir('src/styles');
+  const globalCssSrc = path.join(__dirname, '../../templates/styles/globals.css');
+  const globalCssDest = 'src/styles/globals.css';
+  await fs.copyFile(globalCssSrc, globalCssDest);
 
-    // Create .gitignore file
-    const gitignoreContent = `# Dependencies
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
 
-# Build output
-dist/
-build/
-public/
-storybook-static/
+  // Copy utility function cn.ts from template
+  await fs.ensureDir('src/utils');
+  const cnSrc = path.join(__dirname, '../../templates/utils/cn.ts');
+  const cnDest = 'src/utils/cn.ts';
+  await fs.copyFile(cnSrc, cnDest);
 
-# TypeScript
-*.tsbuildinfo
-
-# Environment variables
-.env
-.env.local
-.env.*.local
-.npmrc
-
-# IDE and editor files
-.idea/
-.vscode/*
-!.vscode/extensions.json
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-*.swp
-*.swo
-.DS_Store
-
-# Test coverage
-coverage/
-
-# Temporary files
-.tmp/
-.temp/
-.cache/
-
-# Generated directories
-.forge/
-.storybook/
-
-# Track .github workflow files
-!.github/
-!.github/workflows/
-
-# Logs and debugging
-*.log
-debug.log*
-forge.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*`;
-
-    await fs.writeFile('.gitignore', gitignoreContent);
-
-    // Create config file
-    await fs.writeJSON('forge.config.json', validatedConfig, { spaces: 2 });
-
-    // Create initial registry
-    const initialRegistry = {
-      name: validatedConfig.name,
-      description: validatedConfig.description || '',
-      version: '1.0.0',
-      author: validatedConfig.author || '',
-      license: validatedConfig.license,
-      repository: validatedConfig.repository || '',
-      homepage: validatedConfig.homepage || '',
-      components: [],
-      categories: validatedConfig.categories,
-      tags: [],
-      lastUpdated: new Date().toISOString(),
-    };
-
-    await fs.writeJSON(path.join(validatedConfig.outputDir, 'registry.json'), initialRegistry, { spaces: 2 });
-
-    // Copy Storybook configuration
-    const storybookTemplatePath = fileURLToPath(new URL('../../templates/.storybook', import.meta.url));
-    await fs.copy(storybookTemplatePath, '.storybook');
-
-    // Create package.json for the component library
-    const packageJson = {
-      name: `@${validatedConfig.author?.toLowerCase().replace(/[^a-z0-9]/g, '') || 'forge'}/${validatedConfig.name}`,
-      version: '1.0.0',
-      description: validatedConfig.description,
-      author: validatedConfig.author,
-      license: validatedConfig.license,
-      homepage: validatedConfig.homepage,
-      repository: {
-        type: 'git',
-        url: validatedConfig.repository || 'git+https://github.com/organization/forge-cli.git'
-      },
-      publishConfig: {
-        registry: 'https://npm.pkg.github.com'
-      },
-      scripts: {
-        'forge:build': 'node ./dist/cli.js build',
-        'forge:validate': 'node ./dist/cli.js validate',
-        'forge:publish': 'node ./dist/cli.js publish',
-        'storybook': 'storybook dev -p 6006',
-        'build-storybook': 'storybook build'
-      },
-      devDependencies: {
-        '@storybook/addon-essentials': '^7.4.0',
-        '@storybook/addon-interactions': '^7.4.0',
-        '@storybook/addon-links': '^7.4.0',
-        '@storybook/blocks': '^7.4.0',
-        '@storybook/react': '^7.4.0',
-        '@storybook/react-vite': '^7.4.0',
-        '@storybook/testing-library': '^0.2.0',
-        'storybook': '^7.4.0',
-        '@vitejs/plugin-react': '^4.0.0',
-        'vite': '^4.4.0'
-      },
-      dependencies: {
-        'react': '^18.2.0',
-        'react-dom': '^18.2.0'
+    // Initialize package.json if it doesn't exist
+    if (!fs.existsSync('package.json')) {
+      interface PackageJson {
+        name: string;
+        version: string;
+        description: string;
+        main: string;
+        types: string;
+        scripts: Record<string, string>;
+        peerDependencies: Record<string, string>;
+        dependencies: Record<string, string>;
+        devDependencies: Record<string, string>;
       }
-    };
 
-    await fs.writeJSON('package.json', packageJson, { spaces: 2 });
-
-    // Create GitHub workflow
-    await createGitHubWorkflow(validatedConfig);
-
-    // Set up .npmrc if GitHub token was provided
-    if (answers.githubToken) {
-      const npmrcContent = `# This file was automatically generated by forge init
-@forge:registry=https://npm.pkg.github.com
-//npm.pkg.github.com/:_authToken=${answers.githubToken}`;
-      
-      await fs.writeFile('.npmrc', npmrcContent);
-      
-      // Add .npmrc to .gitignore to prevent token from being committed
-      const gitignorePath = '.gitignore';
-      const gitignoreExists = await fs.pathExists(gitignorePath);
-      if (gitignoreExists) {
-        const gitignoreContent = await fs.readFile(gitignorePath, 'utf-8');
-        if (!gitignoreContent.includes('.npmrc')) {
-          await fs.appendFile(gitignorePath, '\n.npmrc');
+      const packageJson: PackageJson = {
+        name: config.name,
+        version: '0.1.0',
+        description: config.description || 'A beautiful component library',
+        main: 'dist/index.js',
+        types: 'dist/index.d.ts',
+        scripts: {
+          build: 'tsc',
+          dev: 'tsc -w',
+          storybook: 'storybook dev -p 6006',
+          'build-storybook': 'storybook build'
+        },
+        peerDependencies: {
+          'react': '>=17.0.0',
+          'react-dom': '>=17.0.0'
+        },
+        dependencies: {
+          'class-variance-authority': '^0.7.0',
+          'clsx': '^2.0.0',
+          'tailwind-merge': '^1.14.0',
+          '@radix-ui/react-slot': '^1.0.2',
+          '@radix-ui/react-dialog': '^1.0.4',
+          '@radix-ui/react-label': '^2.0.2',
+          '@radix-ui/react-select': '^1.2.2',
+          '@radix-ui/react-tooltip': '^1.0.6',
+          '@types/react-dom': '^18.2.0',
+          'react': '^18.2.0',
+          'react-dom': '^18.2.0'
+        },
+        devDependencies: {
+          typescript: '^5.0.0',
+          '@types/react': '^18.0.0',
+          '@types/react-dom': '^18.0.0',
+          '@types/node': '^20.0.0',
+          '@testing-library/react': '^14.0.0',
+          '@testing-library/user-event': '^14.4.3',
+          '@testing-library/jest-dom': '^6.1.3',
+          '@storybook/react': '^7.3.2',
+          '@storybook/blocks': '^7.3.2',
+          '@storybook/addon-essentials': '^7.3.2',
+          '@storybook/addon-interactions': '^7.3.2',
+          '@storybook/addon-links': '^7.3.2',
+          '@storybook/addon-themes': '^7.3.2',
+          '@storybook/testing-library': '^0.2.0',
+          '@storybook/builder-webpack5': '^7.3.2',
+          '@storybook/manager-webpack5': '^6.5.16',
+          '@storybook/addon-styling': '^1.3.7',
+          'storybook': '^7.3.2',
+          'tailwindcss-animate': '^1.0.7',
+          'webpack': '^5.88.2'
         }
-      } else {
-        await fs.writeFile(gitignorePath, '.npmrc\n');
+      };
+
+      if (config.tailwind) {
+        packageJson.devDependencies = {
+          ...packageJson.devDependencies,
+          'tailwindcss': '^3.0.0',
+          'autoprefixer': '^10.0.0',
+          'postcss': '^8.0.0'
+        };
       }
-      
-      spinner.succeed('Created .npmrc file with GitHub token (added to .gitignore)');
+
+      await fs.writeJSON('package.json', packageJson, { spaces: 2 });
     }
 
-    // Create example component
-    await createExampleComponent(validatedConfig);
 
-    // Create README
-    await createReadme(validatedConfig);
+    // Copy tsconfig.json from template
+    if (config.typescript && !fs.existsSync('tsconfig.json')) {
+      const tsConfigSrc = path.join(__dirname, '../../templates/config/tsconfig.json');
+      const tsConfigDest = 'tsconfig.json';
+      await fs.copyFile(tsConfigSrc, tsConfigDest);
+    }
+
+
+    // Copy tailwind.config.js from template
+    if (config.tailwind && !fs.existsSync('tailwind.config.js')) {
+      const tailwindConfigSrc = path.join(__dirname, '../../templates/config/tailwind.config.js');
+      const tailwindConfigDest = 'tailwind.config.js';
+      await fs.copyFile(tailwindConfigSrc, tailwindConfigDest);
+    }
+
+    // Create forge.config.json
+    await fs.writeJSON('forge.config.json', config, { spaces: 2 });
 
     spinner.succeed('Forge component library initialized successfully!');
+    
+    // Create example button component using addCommand
+    try {
+      const { addCommand } = await import('./add.js');
+      await addCommand('button', { template: 'button', category: 'ui' });
+    } catch (err) {
+      console.error(chalk.yellow('Note: Default button component could not be created automatically.'));
+    }
 
-    console.log(chalk.green('\n🎉 Your component library is ready!'));
-    console.log(chalk.blue('\nNext steps:'));
-    console.log(chalk.yellow('  1. Add your first component: ') + chalk.white('forge add my-button'));
-    console.log(chalk.yellow('  2. Build your library: ') + chalk.white('forge build'));
-    console.log(chalk.yellow('  3. Publish to GitHub Pages: ') + chalk.white('forge publish'));
-    console.log(chalk.blue('\nDocumentation:'));
-    console.log(chalk.gray('  - forge.config.json - Configuration file'));
-    console.log(chalk.gray('  - src/components/ - Your components'));
-    console.log(chalk.gray('  - public/ - Built registry and documentation'));
+
+  // Create Storybook configuration from template files
+  await fs.ensureDir('.storybook');
+
+  // Copy preview-head.html
+  const previewHeadSrc = path.join(__dirname, '../../templates/.storybook/preview-head.html');
+  const previewHeadDest = '.storybook/preview-head.html';
+  await fs.copyFile(previewHeadSrc, previewHeadDest);
+
+  // Copy main.ts
+  const mainSrc = path.join(__dirname, '../../templates/.storybook/main.ts');
+  const mainDest = '.storybook/main.ts';
+  await fs.copyFile(mainSrc, mainDest);
+
+  // Copy preview.ts
+  const previewSrc = path.join(__dirname, '../../templates/.storybook/preview.ts');
+  const previewDest = '.storybook/preview.ts';
+  await fs.copyFile(previewSrc, previewDest);
+
+    // Add scripts to package.json
+    if (fs.existsSync('package.json')) {
+      const packageJson = await fs.readJSON('package.json');
+      packageJson.scripts = {
+        ...packageJson.scripts,
+        'storybook': 'storybook dev -p 6006',
+        'build-storybook': 'storybook build',
+        'test': 'jest',
+        'test:watch': 'jest --watch',
+        'lint': 'eslint "src/**/*.{ts,tsx}"',
+        'dev': 'npm run storybook'
+      };
+      await fs.writeJSON('package.json', packageJson, { spaces: 2 });
+    }
+
+    // Run npm install
+    console.log(chalk.yellow('\nInstalling dependencies...'));
+    try {
+      execSync('npm install', { stdio: 'inherit' });
+      console.log(chalk.green('✓ Dependencies installed successfully'));
+
+      // Initialize Storybook
+      console.log(chalk.yellow('\nInitializing Storybook...'));
+      console.log(chalk.green('✓ Storybook configured successfully'));
+    } catch (err) {
+      console.error(chalk.red('Failed to install dependencies. Please run npm install manually.'));
+    }
+    
+    console.log();
+    console.log(chalk.green('🎉 Your component library is ready!'));
+    console.log();
+    console.log('Next steps:');
+    console.log('  1. Add your first component: forge add my-button');
+    console.log('  2. Build your library: forge build');
+    console.log('  3. Publish to GitHub Pages: forge publish');
+    console.log();
+    console.log('Documentation:');
+    console.log('  - forge.config.json - Configuration file');
+    console.log('  - src/components/ - Your components');
+    console.log('  - dist/ - Built library output');
 
   } catch (error) {
-    spinner.fail('Failed to initialize Forge');
+    spinner.fail('Failed to initialize component library');
     console.error(chalk.red('Error:'), error instanceof Error ? error.message : error);
+    process.exit(1);
   }
-}
-
-async function createGitHubWorkflow(config: ForgeConfig) {
-  const workflowDir = '.github/workflows';
-  await fs.ensureDir(workflowDir);
-
-  const workflow = `name: Build and Deploy Forge Components
-
-on:
-  push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Build CLI
-      run: npm run build
-    
-    - name: Link CLI locally
-      run: npm link
-    
-    - name: Validate components
-      run: npx forge validate
-    
-    - name: Build component library
-      run: npx forge build
-    
-    - name: Run tests
-      run: npm test
-      continue-on-error: true
-    
-    - name: Upload artifact
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: \${config.outputDir}
-
-  deploy:
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    environment:
-      name: github-pages
-      url: \${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    
-    steps:
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4`;
-
-  await fs.writeFile(path.join(workflowDir, 'forge.yml'), workflow);
-}
-
-async function createExampleComponent(config: ForgeConfig) {
-  const componentDir = path.join(validatedConfig.componentsDir, 'button');
-  await fs.ensureDir(componentDir);
-
-  const extension = config.typescript ? 'ts' : 'js';
-  const componentExt = config.typescript ? 'tsx' : 'jsx';
-
-  // Component definition
-  const componentDef = {
-    name: 'button',
-    displayName: 'Button',
-    description: 'A customizable button component',
-    category: 'ui',
-    version: '1.0.0',
-    props: [
-      {
-        name: 'variant',
-        type: "'primary' | 'secondary' | 'destructive'",
-        required: false,
-        default: 'primary',
-        description: 'The visual style variant of the button',
-      },
-      {
-        name: 'size',
-        type: "'sm' | 'md' | 'lg'",
-        required: false,
-        default: 'md',
-        description: 'The size of the button',
-      },
-      {
-        name: 'disabled',
-        type: 'boolean',
-        required: false,
-        default: false,
-        description: 'Whether the button is disabled',
-      },
-      {
-        name: 'children',
-        type: 'React.ReactNode',
-        required: true,
-        description: 'The content of the button',
-      },
-    ],
-    files: [
-      {
-        name: 'button',
-        path: `button.${componentExt}`,
-        type: 'component' as const,
-      },
-      {
-        name: 'button-types',
-        path: `button.types.${extension}`,
-        type: 'type' as const,
-      },
-    ],
-    examples: ['<Button>Click me</Button>', '<Button variant="secondary">Secondary</Button>'],
-    tags: ['interactive', 'form'],
-  };
-
-  await fs.writeJSON(path.join(componentDir, 'component.json'), componentDef, { spaces: 2 });
-
-  // Component implementation
-  const buttonComponent = config.typescript ? `import React from 'react';
-import { ButtonProps } from './button.types';
-
-export const Button: React.FC<ButtonProps> = ({
-  variant = 'primary',
-  size = 'md',
-  disabled = false,
-  children,
-  className = '',
-  ...props
-}) => {
-  const baseClasses = 'inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50';
-  
-  const variantClasses = {
-    primary: 'bg-primary text-primary-foreground hover:bg-primary/90',
-    secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-    destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
-  };
-  
-  const sizeClasses = {
-    sm: 'h-8 px-3 text-sm',
-    md: 'h-10 px-4',
-    lg: 'h-12 px-6 text-lg',
-  };
-  
-  const classes = \`\${baseClasses} \${variantClasses[variant]} \${sizeClasses[size]} \${className}\`.trim();
-  
-  return (
-    <button
-      className={classes}
-      disabled={disabled}
-      {...props}
-    >
-      {children}
-    </button>
-  );
-};
-
-export default Button;` : `import React from 'react';
-
-export const Button = ({
-  variant = 'primary',
-  size = 'md',
-  disabled = false,
-  children,
-  className = '',
-  ...props
-}) => {
-  const baseClasses = 'inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50';
-  
-  const variantClasses = {
-    primary: 'bg-primary text-primary-foreground hover:bg-primary/90',
-    secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-    destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
-  };
-  
-  const sizeClasses = {
-    sm: 'h-8 px-3 text-sm',
-    md: 'h-10 px-4',
-    lg: 'h-12 px-6 text-lg',
-  };
-  
-  const classes = \`\${baseClasses} \${variantClasses[variant]} \${sizeClasses[size]} \${className}\`.trim();
-  
-  return (
-    <button
-      className={classes}
-      disabled={disabled}
-      {...props}
-    >
-      {children}
-    </button>
-  );
-};
-
-export default Button;`;
-
-  await fs.writeFile(path.join(componentDir, `button.${componentExt}`), buttonComponent);
-
-  if (config.typescript) {
-    const buttonTypes = `import { ButtonHTMLAttributes } from 'react';
-
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'destructive';
-  size?: 'sm' | 'md' | 'lg';
-  disabled?: boolean;
-  children: React.ReactNode;
-}`;
-
-    await fs.writeFile(path.join(componentDir, `button.types.${extension}`), buttonTypes);
-  }
-
-  // Add co-located story file
-  const storyContent = `import type { Meta, StoryObj } from '@storybook/react';
-import { Button } from './button';
-
-const meta: Meta<typeof Button> = {
-  title: 'Example/Button',
-  component: Button,
-  tags: ['autodocs'],
-  argTypes: {
-    variant: {
-      control: 'select',
-      options: ['primary', 'secondary', 'destructive']
-    },
-    size: {
-      control: 'select',
-      options: ['sm', 'md', 'lg']
-    }
-  }
-};
-
-export default meta;
-type Story = StoryObj<typeof Button>;
-
-export const Primary: Story = {
-  args: {
-    variant: 'primary',
-    children: 'Button',
-  }
-};
-
-export const Secondary: Story = {
-  args: {
-    variant: 'secondary',
-    children: 'Button',
-  }
-};
-
-export const Large: Story = {
-  args: {
-    size: 'lg',
-    children: 'Button',
-  }
-};
-
-export const Small: Story = {
-  args: {
-    size: 'sm',
-    children: 'Button',
-  }
-};`;
-
-  await fs.writeFile(path.join(componentDir, `button.stories.${componentExt}`), storyContent);
-}
-
-async function createReadme(config: ForgeConfig) {
-  const readme = `# ${config.name}
-
-${config.description || 'A beautiful component library built with Forge'}
-
-## Installation
-
-First, authenticate with GitHub Packages by creating a .npmrc file in your project root:
-
-\`\`\`
-@forge:registry=https://npm.pkg.github.com
-//npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN
-\`\`\`
-
-Then install the package:
-
-\`\`\`bash
-npm install @forge/cli
-\`\`\`
-
-Or use it directly with npx:
-
-\`\`\`bash
-npx @forge/cli add button
-\`\`\`
-
-## Usage
-
-\`\`\`jsx
-import { Button } from './${config.componentsDir}/button';
-
-function App() {
-  return (
-    <Button variant="primary">
-      Click me
-    </Button>
-  );
-}
-\`\`\`
-
-## Available Components
-
-Visit the [component registry](./public/registry.json) to see all available components.
-
-## Development
-
-\`\`\`bash
-# Add a new component
-forge add my-component
-
-# Build the library
-forge build
-
-# Validate components
-forge validate
-
-# Publish to GitHub Pages
-forge publish
-\`\`\`
-
-## Configuration
-
-See \`forge.config.json\` for configuration options.
-
-## License
-
-${config.license}
-`;
-
-  await fs.writeFile('README.md', readme);
 }

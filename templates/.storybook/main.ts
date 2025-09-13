@@ -1,11 +1,19 @@
+
+
 import type { StorybookConfig } from "@storybook/react-vite";
 
 const config: StorybookConfig = {
-  stories: ["../stories/**/*.mdx", "../stories/**/*.stories.@(js|jsx|mjs|ts|tsx)"],
+  stories: [
+    "../src/components/**/*.stories.@(js|jsx|ts|tsx)",
+    "../src/**/*.mdx",
+    "../stories/**/*.stories.@(js|jsx|ts|tsx)",
+    "../stories/**/*.mdx"
+  ],
   addons: [
     "@storybook/addon-links",
     "@storybook/addon-essentials",
     "@storybook/addon-interactions",
+    "@storybook/addon-themes",
   ],
   framework: {
     name: "@storybook/react-vite",
@@ -15,4 +23,5 @@ const config: StorybookConfig = {
     autodocs: "tag",
   },
 };
+
 export default config;

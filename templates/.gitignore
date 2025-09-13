@@ -31,6 +31,9 @@ yarn-error.log*
 *.swo
 .DS_Store
 
+# Forge CLI
+.forge/
+
 # Testing
 coverage/
 .nyc_output/

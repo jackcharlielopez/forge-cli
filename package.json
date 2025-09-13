@@ -9,16 +9,19 @@
   },
   "scripts": {
     "build": "tsc",
-    "dev": "tsc -w",
+    "dev": "npm run storybook",
     "test": "jest",
-    "lint": "eslint src/**/*.ts",
+    "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "generate-registry": "node dist/scripts/generate-registry.js",
     "generate-components": "node dist/scripts/generate-components.js",
     "generate-dependencies": "node dist/scripts/generate-dependencies.js",
     "build-docs": "node dist/scripts/build-docs.js",
     "validate-components": "node dist/scripts/validate-components.js",
     "prepare-release": "npm run validate-components && npm run generate-registry && npm run generate-components && npm run generate-dependencies && npm run build-docs",
-    "deploy": "npm run prepare-release && gh-pages -d public"
+    "deploy": "npm run prepare-release && gh-pages -d public",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "test:watch": "jest --watch"
   },
   "keywords": [
     "component-library",
@@ -31,29 +34,29 @@
   "author": "Your Name",
   "license": "MIT",
   "dependencies": {
-    "commander": "^11.0.0",
+    "axios": "^1.5.0",
     "chalk": "^5.3.0",
-    "ora": "^7.0.1",
-    "inquirer": "^9.2.0",
+    "commander": "^11.0.0",
+    "cosmiconfig": "^8.3.0",
     "fs-extra": "^11.1.1",
     "glob": "^10.3.0",
-    "axios": "^1.5.0",
+    "inquirer": "^9.2.0",
+    "ora": "^7.0.1",
     "semver": "^7.5.0",
-    "cosmiconfig": "^8.3.0",
     "zod": "^3.22.0"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
     "@types/fs-extra": "^11.0.0",
     "@types/inquirer": "^9.0.0",
+    "@types/jest": "^29.0.0",
+    "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "eslint": "^8.0.0",
+    "gh-pages": "^6.0.0",
     "jest": "^29.0.0",
-    "@types/jest": "^29.0.0",
     "ts-jest": "^29.0.0",
-    "typescript": "^5.0.0",
-    "gh-pages": "^6.0.0"
+    "typescript": "^5.9.2"
   },
   "files": [
     "dist",
