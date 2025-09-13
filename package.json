@@ -43,6 +43,7 @@
     "inquirer": "^9.2.0",
     "ora": "^7.0.1",
     "semver": "^7.5.0",
+    "tailwindcss": "^4.1.13",
     "zod": "^3.22.0"
   },
   "devDependencies": {

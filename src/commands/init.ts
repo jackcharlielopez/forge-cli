@@ -20,12 +20,31 @@ interface InitOptions {
 export async function initCommand(options: InitOptions = {}) {
   // Copy all files from templates/config directly to project root (overwrite if exists)
   const configTemplateDir = path.join(__dirname, "../../templates/config");
+  let copiedPackageJson = false;
   if (await fs.pathExists(configTemplateDir)) {
     const configFiles = await fs.readdir(configTemplateDir);
     for (const file of configFiles) {
       const src = path.join(configTemplateDir, file);
       const dest = file;
       await fs.copyFile(src, dest);
+      if (file === "package.json") {
+        copiedPackageJson = true;
+      }
+    }
+  }
+
+  // If package.json was copied, update its name field
+  if (copiedPackageJson) {
+    try {
+      const pkgPath = path.join(process.cwd(), "package.json");
+      const pkg = await fs.readJSON(pkgPath);
+      pkg.name = options.name || path.basename(process.cwd());
+      await fs.writeJSON(pkgPath, pkg, { spaces: 2 });
+    } catch (err) {
+      console.warn(
+        chalk.yellow("Warning: Failed to update package.json name field."),
+        err instanceof Error ? err.message : err
+      );
     }
   }
   const spinner = ora("Initializing component library...").start();
