@@ -7,7 +7,11 @@ export default (async () => {
   return [
     js.configs.recommended,
     {
-      files: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
+      files: [
+        "**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx",
+        ".storybook/**/*.{js,jsx,ts,tsx}",
+        "**/*.config.{js,ts,cjs,mjs}"
+      ],
       languageOptions: {
         parser: tsParser,
         parserOptions: {
@@ -28,8 +32,14 @@ export default (async () => {
     },
     {
       files: [
-        "**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx",
-        "**/*.test.js", "**/*.test.jsx", "**/*.spec.js", "**/*.spec.jsx"
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.spec.ts",
+        "**/*.spec.tsx",
+        "**/*.test.js",
+        "**/*.test.jsx",
+        "**/*.spec.js",
+        "**/*.spec.jsx",
       ],
       plugins: {
         jest: jestPlugin.default ?? jestPlugin,
@@ -47,7 +57,9 @@ export default (async () => {
         },
       },
       rules: {
-        ...((jestPlugin.configs?.recommended?.rules) || (jestPlugin.default?.configs?.recommended?.rules) || {}),
+        ...(jestPlugin.configs?.recommended?.rules ||
+          jestPlugin.default?.configs?.recommended?.rules ||
+          {}),
       },
     },
   ];
