@@ -13,7 +13,6 @@
   },
   "scripts": {
     "build": "tsc",
-    "publish": "npx forge publish",
     "prepare-release": "npm run validate-components && npm run generate-registry && npm run generate-components && npm run generate-dependencies && npm run build-docs",
     "deploy": "npm run prepare-release && gh-pages -d public"
   },
