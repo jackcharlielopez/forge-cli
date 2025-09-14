@@ -1,6 +1,6 @@
 {
   "name": "@jackcharlielopez/forge-cli",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A powerful CLI for building and managing your own component library",
   "type": "module",
   "main": "dist/index.js",
