@@ -1,5 +1,5 @@
 {
-  "name": "forge-cli",
+  "name": "@jackcharlielopez/forge-cli",
   "version": "1.0.0",
   "description": "A powerful CLI for building and managing your own component library",
   "type": "module",
@@ -7,21 +7,13 @@
   "bin": {
     "forge": "dist/cli.js"
   },
+   "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
   "scripts": {
     "build": "tsc",
-    "dev": "npm run storybook",
-    "test": "jest",
-    "lint": "eslint \"src/**/*.{ts,tsx}\"",
-    "generate-registry": "node dist/scripts/generate-registry.js",
-    "generate-components": "node dist/scripts/generate-components.js",
-    "generate-dependencies": "node dist/scripts/generate-dependencies.js",
-    "build-docs": "node dist/scripts/build-docs.js",
-    "validate-components": "node dist/scripts/validate-components.js",
     "prepare-release": "npm run validate-components && npm run generate-registry && npm run generate-components && npm run generate-dependencies && npm run build-docs",
-    "deploy": "npm run prepare-release && gh-pages -d public",
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build",
-    "test:watch": "jest --watch"
+    "deploy": "npm run prepare-release && gh-pages -d public"
   },
   "keywords": [
     "component-library",
@@ -31,13 +23,11 @@
     "shadcn",
     "components"
   ],
-  "author": "Your Name",
+  "author": "Jack Lopez",
   "license": "MIT",
   "dependencies": {
-    "axios": "^1.5.0",
     "chalk": "^5.3.0",
     "commander": "^11.0.0",
-    "cosmiconfig": "^8.3.0",
     "fs-extra": "^11.1.1",
     "glob": "^10.3.0",
     "inquirer": "^9.2.0",
