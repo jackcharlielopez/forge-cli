@@ -11,15 +11,98 @@ interface PublishOptions {
 }
 
 export async function publishCommand(options: PublishOptions = {}) {
+    // Ask user if package should be public or private
+    let accessFlag = "";
+    try {
+      const pkgPath = path.join(process.cwd(), "package.json");
+      if (await fs.pathExists(pkgPath)) {
+        const pkg = await fs.readJSON(pkgPath);
+        // Only prompt for access if package is scoped (starts with @)
+        if (pkg.name && pkg.name.startsWith("@")) {
+          const { access } = await inquirer.prompt([
+            {
+              type: "list",
+              name: "access",
+              message: "Publish package as public or private?",
+              choices: [
+                { name: "Public (anyone can install)", value: "public" },
+                { name: "Private (only you/your org)", value: "restricted" },
+              ],
+              default: "restricted",
+            },
+          ]);
+          if (access === "public") {
+            accessFlag = "--access public";
+          } else {
+            accessFlag = "--access restricted";
+          }
+        }
+      }
+    } catch {}
+    // Helper to update package.json name to match scope and folder
+    async function ensurePackageName(scope: string) {
+      const pkgPath = path.join(process.cwd(), "package.json");
+      if (await fs.pathExists(pkgPath)) {
+        const pkg = await fs.readJSON(pkgPath);
+        const folderName = path.basename(process.cwd());
+        const expectedName = `@${scope}/${folderName}`;
+        if (pkg.name !== expectedName) {
+          pkg.name = expectedName;
+          await fs.writeJSON(pkgPath, pkg, { spaces: 2 });
+          console.log(chalk.yellow(`Updated package.json name to '${expectedName}' for GitHub Packages.`));
+        }
+      }
+    }
   const spinner = ora("Preparing to publish...").start();
   try {
-    // 1. Check .npmrc for GitHub token
+    // 1. Check .npmrc for GitHub token and registry line
     const npmrcPath = path.join(process.cwd(), ".npmrc");
     let npmrcContent = "";
     let hasToken = false;
+    let hasRegistry = false;
+    let scope = "";
     if (await fs.pathExists(npmrcPath)) {
       npmrcContent = await fs.readFile(npmrcPath, "utf8");
       hasToken = /npm\.pkg\.github\.com\/:_authToken=\S+/.test(npmrcContent);
+      hasRegistry = /@[^:]+:registry=https:\/\/npm\.pkg\.github\.com\//.test(npmrcContent);
+    }
+    // Always prompt user for GitHub username/org for registry line
+    if (!hasRegistry) {
+      spinner.stop();
+      // Try to detect GitHub username/org from git remote
+      let defaultScope = "";
+      try {
+        const { stdout: remoteUrl } = await run_in_terminal("git config --get remote.origin.url");
+        // Trim whitespace/newlines before matching
+        const trimmedUrl = remoteUrl.trim();
+        // Match both SSH and HTTPS GitHub URLs
+        const match = trimmedUrl.match(/github.com[/:]([^/]+)\//);
+        if (match && match[1]) {
+          defaultScope = match[1];
+        }
+      } catch {}
+      const { userScope } = await inquirer.prompt([
+        {
+          type: "input",
+          name: "userScope",
+          message: "Enter your GitHub username or org (for .npmrc registry line):",
+          default: defaultScope,
+          validate: (input) => input.trim() ? true : "Scope is required",
+        },
+      ]);
+      scope = userScope.trim();
+      const registryLine = `@${scope}:registry=https://npm.pkg.github.com/\n`;
+      await fs.appendFile(npmrcPath, registryLine);
+      console.log(chalk.green(`.npmrc updated with registry for @${scope}`));
+      await ensurePackageName(scope);
+      spinner.start();
+    } else if (hasRegistry) {
+      // If registry already exists, try to extract scope and ensure package name
+      const match = npmrcContent.match(/@([^:]+):registry=https:\/\/npm\.pkg\.github\.com\//);
+      if (match && match[1]) {
+        scope = match[1];
+        await ensurePackageName(scope);
+      }
     }
     if (!hasToken) {
       spinner.stop();
@@ -38,9 +121,6 @@ export async function publishCommand(options: PublishOptions = {}) {
       console.log(chalk.green(".npmrc updated with your token."));
       spinner.start();
     }
-
-    const config = await loadForgeConfig();
-
 
     // 2. Validate components
     spinner.text = "Validating components...";
@@ -106,7 +186,8 @@ export async function publishCommand(options: PublishOptions = {}) {
 
     // 6. Publish to GitHub Packages
     spinner.text = "Publishing to GitHub Packages...";
-    const publishResult = await run_in_terminal("npm publish");
+    const publishCmd = accessFlag ? `npm publish ${accessFlag}` : "npm publish";
+    const publishResult = await run_in_terminal(publishCmd);
     if (publishResult.exitCode !== 0) {
       spinner.fail("npm publish failed");
       console.error(chalk.red("Error: npm publish failed. Check your .npmrc and token."));

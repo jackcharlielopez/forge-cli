@@ -110,6 +110,17 @@ export async function initCommand(options: InitOptions = {}) {
 
     spinner.succeed("Forge component library initialized successfully!");
 
+    // Initialize git repo if not already present
+    try {
+      if (!fs.existsSync(path.join(process.cwd(), ".git"))) {
+        console.log(chalk.yellow("\nInitializing git repository..."));
+        execSync("git init", { stdio: "inherit" });
+        console.log(chalk.green("✓ Git repository initialized"));
+      }
+    } catch (err) {
+      console.error(chalk.red("Failed to initialize git repository. Please run 'git init' manually if needed."));
+    }
+
     // Copy all files from templates/.storybook
     const storybookTemplateDir = path.join(
       __dirname,

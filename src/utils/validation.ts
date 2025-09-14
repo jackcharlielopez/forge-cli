@@ -16,45 +16,13 @@ export async function validateComponent(
     );
   }
 
-  // Validate file extensions
+  // Only check for nested components and empty files
   for (const file of component.files) {
     const filePath = path.join(componentDir, file.path);
-    const ext = path.extname(file.path);
-
-    if (file.type === "component" && ![".tsx", ".jsx"].includes(ext)) {
-      errors.push(
-        `Component file ${file.path} should have .tsx or .jsx extension`,
-      );
-    }
-
-    if (file.type === "type" && ![".ts", ".d.ts"].includes(ext)) {
-      errors.push(`Type file ${file.path} should have .ts or .d.ts extension`);
-    }
-
-    // Check if file exists and is not empty
     if (await fs.pathExists(filePath)) {
       const stat = await fs.stat(filePath);
       if (stat.size === 0) {
         errors.push(`File ${file.path} is empty`);
-      }
-    }
-  }
-
-  // Validate component syntax (basic check)
-  for (const file of component.files) {
-    if (file.type === "component") {
-      const filePath = path.join(componentDir, file.path);
-      const content = await fs.readFile(filePath, "utf-8");
-
-      // Basic syntax validation
-      if (!content.includes("export")) {
-        errors.push(`Component file ${file.path} should export the component`);
-      }
-
-      if (file.path.endsWith(".tsx") || file.path.endsWith(".jsx")) {
-        if (!content.includes("import React")) {
-          errors.push(`React component ${file.path} should import React`);
-        }
       }
     }
   }

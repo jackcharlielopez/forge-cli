@@ -7,12 +7,17 @@
   "bin": {
     "forge": "dist/cli.js"
   },
-   "publishConfig": {
+  "publishConfig": {
     "registry": "https://npm.pkg.github.com/",
     "access": "restricted"
   },
   "scripts": {
     "build": "tsc",
+    "generate-registry": "node dist/scripts/generate-registry.js",
+    "generate-components": "node dist/scripts/generate-components.js",
+    "generate-dependencies": "node dist/scripts/generate-dependencies.js",
+    "build-docs": "node dist/scripts/build-docs.js",
+    "validate-components": "node dist/scripts/validate-components.js",
     "prepare-release": "npm run validate-components && npm run generate-registry && npm run generate-components && npm run generate-dependencies && npm run build-docs",
     "deploy": "npm run prepare-release && gh-pages -d public"
   },
