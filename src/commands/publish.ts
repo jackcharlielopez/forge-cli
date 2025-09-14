@@ -11,6 +11,49 @@ interface PublishOptions {
 }
 
 export async function publishCommand(options: PublishOptions = {}) {
+    // Prompt for version bump unless first publish (1.0.0)
+    const pkgPath = path.join(process.cwd(), "package.json");
+    if (await fs.pathExists(pkgPath)) {
+      const pkg = await fs.readJSON(pkgPath);
+      let currentVersion = pkg.version || "1.0.0";
+      // Only prompt if not first publish (not 1.0.0)
+      if (currentVersion !== "1.0.0") {
+        const semver = currentVersion.split(".").map(Number);
+        const nextPatch = `${semver[0]}.${semver[1]}.${semver[2] + 1}`;
+        const nextMinor = `${semver[0]}.${semver[1] + 1}.0`;
+        const nextMajor = `${semver[0] + 1}.0.0`;
+        const { versionBump } = await inquirer.prompt([
+          {
+            type: "list",
+            name: "versionBump",
+            message: `Current version is ${currentVersion}. Bump version before publishing:`,
+            choices: [
+              { name: `Patch (${nextPatch})`, value: nextPatch },
+              { name: `Minor (${nextMinor})`, value: nextMinor },
+              { name: `Major (${nextMajor})`, value: nextMajor },
+              { name: "Custom", value: "custom" },
+            ],
+          },
+        ]);
+        let newVersion = versionBump;
+        if (versionBump === "custom") {
+          const { customVersion } = await inquirer.prompt([
+            {
+              type: "input",
+              name: "customVersion",
+              message: "Enter custom version:",
+              validate: (input) => /^\d+\.\d+\.\d+$/.test(input) ? true : "Must be in x.y.z format",
+            },
+          ]);
+          newVersion = customVersion;
+        }
+        if (newVersion !== currentVersion) {
+          pkg.version = newVersion;
+          await fs.writeJSON(pkgPath, pkg, { spaces: 2 });
+          console.log(chalk.yellow(`Updated version to ${newVersion}`));
+        }
+      }
+    }
     // Ask user if package should be public or private
     let accessFlag = "";
     try {

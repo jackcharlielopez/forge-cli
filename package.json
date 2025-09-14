@@ -1,11 +1,15 @@
 {
   "name": "@jackcharlielopez/forge-cli",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "A powerful CLI for building and managing your own component library",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
     "forge": "dist/cli.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jackcharlielopez/forge-cli.git"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/",
